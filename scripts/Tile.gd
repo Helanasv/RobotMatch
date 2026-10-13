@@ -32,6 +32,8 @@ var column := 0
 var _style: StyleBoxFlat
 var _label: Label
 var _tween: Tween
+var _is_selected := false
+var _is_matched := false
 var _base_border := Color(0.08, 0.1, 0.14)
 
 
@@ -72,19 +74,53 @@ func set_grid_position(grid_row: int, grid_column: int) -> void:
 
 
 func set_selected(is_selected: bool) -> void:
+	_is_selected = is_selected
+	_update_chrome()
+
+
+func set_matched(is_matched: bool) -> void:
+	_is_matched = is_matched
+	_update_chrome()
+
+
+func _update_chrome() -> void:
 	if _style == null:
 		return
-	_style.border_color = Color.WHITE if is_selected else _base_border
-	_style.set_border_width_all(5 if is_selected else 3)
+	if _is_matched:
+		_style.border_color = Color(1, 0.95, 0.55)
+		_style.set_border_width_all(6)
+		modulate = Color(1.3, 1.3, 1.3)
+		return
+	modulate = Color.WHITE
+	_style.border_color = Color.WHITE if _is_selected else _base_border
+	_style.set_border_width_all(5 if _is_selected else 3)
 
 
-func move_to(target_position: Vector2, target_size: Vector2, duration: float = 0.2) -> void:
+func disappear() -> Tween:
 	if _tween != null and _tween.is_valid():
 		_tween.kill()
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var center := position + size * 0.5
+	_tween = create_tween()
+	_tween.set_parallel(true)
+	_tween.tween_property(self, "modulate:a", 0.0, 0.18)
+	_tween.tween_property(self, "size", Vector2.ZERO, 0.18)
+	_tween.tween_property(self, "position", center, 0.18)
+	return _tween
+
+
+func move_to(target_position: Vector2, target_size: Vector2, duration: float = 0.2) -> Tween:
+	if _tween != null and _tween.is_valid():
+		_tween.kill()
+	z_index = 1
 	_tween = create_tween()
 	_tween.set_parallel(true)
 	_tween.tween_property(self, "position", target_position, duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	_tween.tween_property(self, "size", target_size, duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_tween.finished.connect(func() -> void:
+		z_index = 0
+	)
+	return _tween
 
 
 func _apply_look() -> void:

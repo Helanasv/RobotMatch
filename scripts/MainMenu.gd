@@ -1,6 +1,9 @@
 extends Control
 
+const SaveDataScript := preload("res://scripts/SaveData.gd")
+
 func _ready() -> void:
+	$Menu/CoinsLabel.text = "Coins: %d" % SaveDataScript.load_coins()
 	$Menu/PlayButton.pressed.connect(_open_first_level)
 	$Menu/LevelSelectButton.pressed.connect(_open_level_select)
 	$Menu/UpgradeButton.pressed.connect(_open_robot_upgrade)

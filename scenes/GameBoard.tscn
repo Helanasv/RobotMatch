@@ -53,14 +53,49 @@ text = "Back"
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.918, 0.949, 0.973, 1)
-theme_override_font_sizes/font_size = 36
-text = "Level 1"
+theme_override_font_sizes/font_size = 32
+text = "First Battery"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Balance" type="Control" parent="Layout/VBox/TopBar"]
 custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
+
+[node name="GoalLabel" type="Label" parent="Layout/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.8, 0.18, 1)
+theme_override_font_sizes/font_size = 24
+text = "Goal: Batteries: 0/10"
+horizontal_alignment = 1
+
+[node name="Status" type="HBoxContainer" parent="Layout/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ScoreLabel" type="Label" parent="Layout/VBox/Status"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.95, 0.82, 0.4, 1)
+theme_override_font_sizes/font_size = 22
+text = "Score: 0"
+horizontal_alignment = 1
+
+[node name="ComboLabel" type="Label" parent="Layout/VBox/Status"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.98, 0.95, 0.86, 1)
+theme_override_font_sizes/font_size = 22
+text = "Combo x1"
+horizontal_alignment = 1
+
+[node name="MovesLabel" type="Label" parent="Layout/VBox/Status"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.7, 0.86, 0.95, 1)
+theme_override_font_sizes/font_size = 22
+text = "Moves: 20/20"
+horizontal_alignment = 1
 
 [node name="BoardHost" type="Control" parent="Layout/VBox"]
 layout_mode = 2
@@ -77,3 +112,139 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("2_manager")
+
+[node name="WinScreen" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dim" type="ColorRect" parent="WinScreen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.04, 0.07, 0.1, 0.88)
+
+[node name="Card" type="PanelContainer" parent="WinScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -280.0
+offset_top = -300.0
+offset_right = 280.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="VBoxContainer" parent="WinScreen/Card"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="WinScreen/Card/Panel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.2, 1)
+theme_override_font_sizes/font_size = 40
+text = "Mission Complete!"
+horizontal_alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="WinScreen/Card/Panel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.2, 1)
+theme_override_font_sizes/font_size = 28
+text = "Score: 0"
+horizontal_alignment = 1
+
+[node name="MovesLabel" type="Label" parent="WinScreen/Card/Panel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.2, 1)
+theme_override_font_sizes/font_size = 28
+text = "Moves left: 0"
+horizontal_alignment = 1
+
+[node name="StarsLabel" type="Label" parent="WinScreen/Card/Panel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.2, 1)
+theme_override_font_sizes/font_size = 28
+text = "Stars: 0"
+horizontal_alignment = 1
+
+[node name="CoinsLabel" type="Label" parent="WinScreen/Card/Panel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.2, 1)
+theme_override_font_sizes/font_size = 28
+text = "Coins: 0"
+horizontal_alignment = 1
+
+[node name="BackButton" type="Button" parent="WinScreen/Card/Panel"]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "Back"
+
+[node name="LoseScreen" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dim" type="ColorRect" parent="LoseScreen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.04, 0.07, 0.1, 0.88)
+
+[node name="Card" type="PanelContainer" parent="LoseScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -280.0
+offset_top = -240.0
+offset_right = 280.0
+offset_bottom = 240.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="VBoxContainer" parent="LoseScreen/Card"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="LoseScreen/Card/Panel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.2, 1)
+theme_override_font_sizes/font_size = 40
+text = "Out of Moves"
+horizontal_alignment = 1
+
+[node name="Body" type="Label" parent="LoseScreen/Card/Panel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.2, 1)
+theme_override_font_sizes/font_size = 28
+text = "Batteries: 0/10
+Score: 0"
+horizontal_alignment = 1
+
+[node name="BackButton" type="Button" parent="LoseScreen/Card/Panel"]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "Back"
