@@ -3,12 +3,10 @@ extends RefCounted
 signal changed
 
 const MOVE_LIMIT := 20
-const BATTERY_GOAL := 10
 
 var score := 0
 var multiplier := 1
 var moves := MOVE_LIMIT
-var batteries := 0
 
 
 func spend_move() -> void:
@@ -38,20 +36,9 @@ func add_match_lengths(lengths: Array) -> int:
 	return gained
 
 
-func add_batteries(count: int) -> void:
-	if count <= 0:
-		return
-	batteries += count
-	changed.emit()
-
-
 func increase_combo() -> void:
 	multiplier += 1
 	changed.emit()
-
-
-func goal_reached() -> bool:
-	return batteries >= BATTERY_GOAL
 
 
 func stars() -> int:
@@ -72,7 +59,3 @@ func combo_text() -> String:
 
 func moves_text() -> String:
 	return "Moves: %d/%d" % [moves, MOVE_LIMIT]
-
-
-func goal_text() -> String:
-	return "Goal: Batteries: %d/%d" % [batteries, BATTERY_GOAL]

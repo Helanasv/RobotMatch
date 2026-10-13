@@ -4,12 +4,14 @@ const InputManagerScript := preload("res://scripts/InputManager.gd")
 const MatchManagerScript := preload("res://scripts/MatchManager.gd")
 const BoardManagerScript := preload("res://scripts/BoardManager.gd")
 const ScoreManagerScript := preload("res://scripts/ScoreManager.gd")
+const GoalManagerScript := preload("res://scripts/GoalManager.gd")
 const SaveDataScript := preload("res://scripts/SaveData.gd")
 const TileScript := preload("res://scripts/Tile.gd")
 
 var _board: Control
 var _matches: RefCounted
 var _score: RefCounted
+var _goals: RefCounted
 
 
 func _ready() -> void:
@@ -24,7 +26,10 @@ func _ready() -> void:
 	])
 	_matches = MatchManagerScript.new()
 	_score = ScoreManagerScript.new()
+	_goals = GoalManagerScript.new()
+	_goals.add_goal(GoalManagerScript.COLLECT, 10, "battery")
 	_score.changed.connect(_refresh_hud)
+	_goals.changed.connect(_refresh_hud)
 	_refresh_hud()
 	_board.swap_committed.connect(_on_swap_committed)
 	_board.set_state(BoardManagerScript.State.CHECKING)
@@ -66,8 +71,8 @@ func _resolve_matches(award_score: bool) -> void:
 				counted = true
 			else:
 				_score.increase_combo()
-			_score.add_match_lengths(_matches.match_lengths(_board))
-			_score.add_batteries(_count_batteries(found))
+			var gained: int = _score.add_match_lengths(_matches.match_lengths(_board))
+			_goals.record_match(found, gained)
 		await _clear_matches(found)
 		_board.set_state(BoardManagerScript.State.FALLING)
 		await _board.collapse()
@@ -77,21 +82,13 @@ func _resolve_matches(award_score: bool) -> void:
 
 
 func _finish_turn(from_player: bool) -> void:
-	if from_player and _score.goal_reached():
+	if from_player and _goals.all_complete():
 		_show_win()
 		return
 	if from_player and _score.moves <= 0:
 		_show_lose()
 		return
 	_board.set_state(BoardManagerScript.State.READY)
-
-
-func _count_batteries(tiles: Array) -> int:
-	var count := 0
-	for tile in tiles:
-		if tile.tile_type == TileScript.Type.BATTERY:
-			count += 1
-	return count
 
 
 func _clear_matches(tiles: Array) -> void:
@@ -130,16 +127,12 @@ func _show_win() -> void:
 func _show_lose() -> void:
 	_board.set_state(BoardManagerScript.State.LOSE)
 	$WinScreen.visible = false
-	$LoseScreen/Card/Panel/Body.text = "Batteries: %d/%d\nScore: %d" % [
-		_score.batteries,
-		ScoreManagerScript.BATTERY_GOAL,
-		_score.score,
-	]
+	$LoseScreen/Card/Panel/Body.text = "%s\nScore: %d" % [_goals.status_text(), _score.score]
 	$LoseScreen.visible = true
 
 
 func _refresh_hud() -> void:
-	$Layout/VBox/GoalLabel.text = _score.goal_text()
+	$Layout/VBox/GoalLabel.text = _goals.hud_text()
 	$Layout/VBox/Status/ScoreLabel.text = "Score: %d" % _score.score
 	$Layout/VBox/Status/ComboLabel.text = _score.combo_text()
 	$Layout/VBox/Status/MovesLabel.text = _score.moves_text()
