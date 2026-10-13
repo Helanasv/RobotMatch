@@ -1,0 +1,8 @@
+extends Control
+
+func _ready() -> void:
+	$Layout/VBox/TopBar/BackButton.pressed.connect(_go_back)
+
+
+func _go_back() -> void:
+	get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")

@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://cgameboard01"]
+[gd_scene load_steps=3 format=3 uid="uid://cgameboard01"]
 
-[ext_resource type="Script" path="res://scripts/placeholder_screen.gd" id="1_screen"]
+[ext_resource type="Script" path="res://scripts/GameBoard.gd" id="1_board"]
+[ext_resource type="Script" path="res://scripts/BoardManager.gd" id="2_manager"]
 
 [node name="GameBoard" type="Control"]
 layout_mode = 3
@@ -9,7 +10,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_screen")
+script = ExtResource("1_board")
 
 [node name="Background" type="ColorRect" parent="."]
 layout_mode = 1
@@ -18,58 +19,61 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 color = Color(0.09, 0.16, 0.18, 1)
 
-[node name="Title" type="Label" parent="."]
+[node name="Layout" type="MarginContainer" parent="."]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -280.0
-offset_top = -80.0
-offset_right = 280.0
-offset_bottom = -20.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="VBox" type="VBoxContainer" parent="Layout"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="TopBar" type="HBoxContainer" parent="Layout/VBox"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="BackButton" type="Button" parent="Layout/VBox/TopBar"]
+custom_minimum_size = Vector2(160, 72)
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "Back"
+
+[node name="Title" type="Label" parent="Layout/VBox/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.918, 0.949, 0.973, 1)
-theme_override_font_sizes/font_size = 42
-text = "Игровое поле"
+theme_override_font_sizes/font_size = 36
+text = "Level 1"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Note" type="Label" parent="."]
+[node name="Balance" type="Control" parent="Layout/VBox/TopBar"]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+
+[node name="BoardHost" type="Control" parent="Layout/VBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="Board" type="Control" parent="Layout/VBox/BoardHost"]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -280.0
-offset_top = -10.0
-offset_right = 280.0
-offset_bottom = 50.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_colors/font_color = Color(0.494, 0.722, 0.816, 1)
-theme_override_font_sizes/font_size = 22
-text = "Поле появится на следующем этапе"
-horizontal_alignment = 1
-
-[node name="BackButton" type="Button" parent="."]
-custom_minimum_size = Vector2(280, 76)
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -140.0
-offset_top = -140.0
-offset_right = 140.0
-offset_bottom = -64.0
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_font_sizes/font_size = 28
-text = "Назад"
+mouse_filter = 2
+script = ExtResource("2_manager")
