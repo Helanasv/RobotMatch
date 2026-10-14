@@ -3,6 +3,8 @@ extends Control
 const GRID_SIZE := 8
 const GAP := 6.0
 const FRAME_PADDING := 8.0
+const BLOCK_TEXTURE: Texture2D = preload("res://assets/tiles/block.svg")
+const VIRUS_TEXTURE: Texture2D = preload("res://assets/tiles/virus.svg")
 
 signal swap_committed
 
@@ -18,6 +20,9 @@ var _origin := Vector2.ZERO
 var _cell_size := 1.0
 var _upcoming: Array[Tile.Type] = []
 var _allowed: Array = []
+var _layout_dirty := false
+var _cells: Array = []
+var _markers := {}
 
 
 func _ready() -> void:
@@ -53,11 +58,179 @@ func use_types(types: Array) -> void:
 	_has_layout = false
 	for row in GRID_SIZE:
 		for column in GRID_SIZE:
+			if _blocks_fall(row, column):
+				grid.append(null)
+				continue
 			var tile := Tile.new()
 			tile.setup(_next_type(), row, column)
 			add_child(tile)
 			grid.append(tile)
 	_layout_tiles()
+
+
+func place_blocks(positions: Array) -> void:
+	_clear_markers()
+	_cells.clear()
+	for _i in GRID_SIZE * GRID_SIZE:
+		_cells.append("")
+	for pos in positions:
+		var row := int(pos[0])
+		var column := int(pos[1])
+		_cells[row * GRID_SIZE + column] = "metal"
+		_markers["%d,%d" % [row, column]] = _picture(BLOCK_TEXTURE, 0)
+
+
+func damage_blocks(tiles: Array, special: bool) -> int:
+	if _cells.size() != GRID_SIZE * GRID_SIZE:
+		return 0
+	var hit := {}
+	for tile in tiles:
+		for row_step in [-1, 0, 1]:
+			for column_step in [-1, 0, 1]:
+				if row_step == 0 and column_step == 0:
+					continue
+				if not special and absi(row_step) + absi(column_step) != 1:
+					continue
+				var row: int = tile.row + row_step
+				var column: int = tile.column + column_step
+				if row < 0 or column < 0 or row >= GRID_SIZE or column >= GRID_SIZE:
+					continue
+				if str(_cells[row * GRID_SIZE + column]) != "metal":
+					continue
+				hit["%d,%d" % [row, column]] = Vector2i(row, column)
+	for key in hit:
+		var cell: Vector2i = hit[key]
+		_cells[cell.x * GRID_SIZE + cell.y] = ""
+		var marker = _markers.get(key)
+		if is_instance_valid(marker):
+			marker.queue_free()
+		_markers.erase(key)
+	return hit.size()
+
+
+func block_count() -> int:
+	var count := 0
+	for kind in _cells:
+		if str(kind) == "metal":
+			count += 1
+	return count
+
+
+func place_infected(positions: Array) -> void:
+	_ensure_cells()
+	for pos in positions:
+		_infect(int(pos[0]), int(pos[1]))
+	_place_markers()
+
+
+func clear_infected_near(tiles: Array) -> int:
+	if _cells.size() != GRID_SIZE * GRID_SIZE:
+		return 0
+	var hit := {}
+	for tile in tiles:
+		_mark_infected(hit, tile.row, tile.column)
+		_mark_infected(hit, tile.row - 1, tile.column)
+		_mark_infected(hit, tile.row + 1, tile.column)
+		_mark_infected(hit, tile.row, tile.column - 1)
+		_mark_infected(hit, tile.row, tile.column + 1)
+	for key in hit:
+		var cell: Vector2i = hit[key]
+		_cells[cell.x * GRID_SIZE + cell.y] = ""
+		var marker = _markers.get(key)
+		if is_instance_valid(marker):
+			marker.queue_free()
+		_markers.erase(key)
+	return hit.size()
+
+
+func spread_virus() -> bool:
+	if _cells.size() != GRID_SIZE * GRID_SIZE:
+		return false
+	for row in GRID_SIZE:
+		for column in GRID_SIZE:
+			if str(_cells[row * GRID_SIZE + column]) != "infected":
+				continue
+			for step in [Vector2i(-1, 0), Vector2i(1, 0), Vector2i(0, -1), Vector2i(0, 1)]:
+				var next_row: int = row + int(step.y)
+				var next_column: int = column + int(step.x)
+				if next_row < 0 or next_column < 0 or next_row >= GRID_SIZE or next_column >= GRID_SIZE:
+					continue
+				if str(_cells[next_row * GRID_SIZE + next_column]) != "":
+					continue
+				_infect(next_row, next_column)
+				_place_markers()
+				return true
+	return false
+
+
+func infected_count() -> int:
+	var count := 0
+	for kind in _cells:
+		if str(kind) == "infected":
+			count += 1
+	return count
+
+
+func _picture(texture: Texture2D, layer: int) -> TextureRect:
+	var marker := TextureRect.new()
+	marker.texture = texture
+	marker.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	marker.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	marker.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	marker.z_index = layer
+	add_child(marker)
+	return marker
+
+
+func _ensure_cells() -> void:
+	if _cells.size() == GRID_SIZE * GRID_SIZE:
+		return
+	_cells.clear()
+	for _i in GRID_SIZE * GRID_SIZE:
+		_cells.append("")
+
+
+func _infect(row: int, column: int) -> void:
+	_cells[row * GRID_SIZE + column] = "infected"
+	var key := "%d,%d" % [row, column]
+	if _markers.has(key) and is_instance_valid(_markers[key]):
+		return
+	_markers[key] = _picture(VIRUS_TEXTURE, 2)
+
+
+func _mark_infected(hit: Dictionary, row: int, column: int) -> void:
+	if row < 0 or column < 0 or row >= GRID_SIZE or column >= GRID_SIZE:
+		return
+	if str(_cells[row * GRID_SIZE + column]) != "infected":
+		return
+	hit["%d,%d" % [row, column]] = Vector2i(row, column)
+
+
+func _blocks_fall(row: int, column: int) -> bool:
+	if _cells.size() != GRID_SIZE * GRID_SIZE:
+		return false
+	return str(_cells[row * GRID_SIZE + column]) == "metal"
+
+
+func _clear_markers() -> void:
+	for key in _markers:
+		var marker = _markers[key]
+		if is_instance_valid(marker):
+			marker.free()
+	_markers.clear()
+
+
+func _place_markers() -> void:
+	if _cell_size < 1.0:
+		return
+	var tile_size := Vector2(_cell_size, _cell_size)
+	for key in _markers:
+		var marker = _markers[key]
+		if not is_instance_valid(marker):
+			continue
+		var parts: PackedStringArray = key.split(",")
+		marker.position = cell_origin(int(parts[0]), int(parts[1]))
+		marker.size = tile_size
 
 
 func _layout_tiles() -> void:
@@ -75,25 +248,31 @@ func _layout_tiles() -> void:
 	var frame := get_node("Frame") as ColorRect
 	frame.position = frame_origin
 	frame.size = Vector2(framed_side, framed_side)
+	var geometry_changed := absf(_cell_size - cell_size) > 0.5 or _origin.distance_to(origin) > 0.5
 	_origin = origin
 	_cell_size = cell_size
+	_place_markers()
 	var first_layout := not _has_layout
-	var place_tiles := not _busy or first_layout
+	var animating := state == State.SWAPPING or state == State.CLEARING or state == State.FALLING or state == State.REFILLING
 	_has_layout = true
-	if not place_tiles:
+	if animating:
+		if geometry_changed:
+			_layout_dirty = true
+		return
+	if not first_layout and not geometry_changed and _busy:
 		return
 
+	var tile_size := Vector2(_cell_size, _cell_size)
 	for row in GRID_SIZE:
 		for column in GRID_SIZE:
 			var tile: Tile = get_tile(row, column)
 			if tile == null:
 				continue
 			var target := cell_origin(row, column)
-			var target_size := Vector2(_cell_size, _cell_size)
 			if first_layout:
 				tile.position = target + Vector2(0, -_cell_size * 0.45)
-				tile.size = target_size
-			tile.move_to(target, target_size, 0.22 if first_layout else 0.16)
+				tile.size = tile_size
+			tile.move_to(target, tile_size, 0.22 if first_layout else 0.12)
 
 
 func has_layout() -> bool:
@@ -103,6 +282,24 @@ func has_layout() -> bool:
 func set_state(next: State) -> void:
 	state = next
 	_busy = state != State.READY
+	if state == State.READY and _layout_dirty:
+		_layout_dirty = false
+		snap_tiles()
+
+
+func snap_tiles() -> void:
+	if _cell_size < 1.0:
+		return
+	var tile_size := Vector2(_cell_size, _cell_size)
+	for row in GRID_SIZE:
+		for column in GRID_SIZE:
+			var tile: Tile = get_tile(row, column)
+			if tile == null:
+				continue
+			tile.halt()
+			tile.position = cell_origin(row, column)
+			tile.size = tile_size
+	_place_markers()
 
 
 func can_swap() -> bool:
@@ -202,6 +399,9 @@ func collapse() -> void:
 	for column in GRID_SIZE:
 		var write := GRID_SIZE - 1
 		for row in range(GRID_SIZE - 1, -1, -1):
+			if _blocks_fall(row, column):
+				write = row - 1
+				continue
 			var tile: Tile = get_tile(row, column)
 			if tile == null:
 				continue
@@ -209,7 +409,7 @@ func collapse() -> void:
 				grid[row * GRID_SIZE + column] = null
 				grid[write * GRID_SIZE + column] = tile
 				tile.set_grid_position(write, column)
-				tweens.append(tile.move_to(cell_origin(write, column), tile.size, 0.22))
+				tweens.append(tile.move_to(cell_origin(write, column), Vector2(_cell_size, _cell_size), 0.22))
 			write -= 1
 	for tween in tweens:
 		await _wait(tween)
@@ -221,7 +421,7 @@ func refill() -> void:
 	for column in GRID_SIZE:
 		var holes: Array[int] = []
 		for row in GRID_SIZE:
-			if get_tile(row, column) == null:
+			if get_tile(row, column) == null and not _blocks_fall(row, column):
 				holes.append(row)
 		for i in holes.size():
 			var row: int = holes[i]

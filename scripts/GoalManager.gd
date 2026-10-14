@@ -25,7 +25,8 @@ func add_goal(type: String, amount: int, tile_type: String = "") -> void:
 	changed.emit()
 
 
-func record_match(tiles: Array, points: int) -> void:
+func record_match(tiles: Array, points: int, charge_rates = null) -> void:
+	var rates: Dictionary = charge_rates if charge_rates is Dictionary else {}
 	var counts := {}
 	for tile in tiles:
 		var key := _tile_key(tile)
@@ -37,6 +38,9 @@ func record_match(tiles: Array, points: int) -> void:
 			gained = int(counts.get(goal.tile_type, 0))
 		elif goal.type == SCORE:
 			gained = points
+		elif goal.type == CHARGE_GENERATOR:
+			for key in counts:
+				gained += int(counts[key]) * int(rates.get(key, 0))
 		if _gain(goal, gained):
 			moved = true
 	if moved:

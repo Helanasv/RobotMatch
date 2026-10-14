@@ -2,11 +2,15 @@ extends RefCounted
 
 signal changed
 
-const MOVE_LIMIT := 20
-
+var move_limit := 20
 var score := 0
 var multiplier := 1
-var moves := MOVE_LIMIT
+var moves := 20
+
+
+func configure(limit: int) -> void:
+	move_limit = maxi(limit, 1)
+	moves = move_limit
 
 
 func spend_move() -> void:
@@ -41,21 +45,9 @@ func increase_combo() -> void:
 	changed.emit()
 
 
-func stars() -> int:
-	if moves >= 10:
-		return 3
-	if moves >= 5:
-		return 2
-	return 1
-
-
-func coins_earned() -> int:
-	return stars() * 10
-
-
 func combo_text() -> String:
 	return "Combo x%d" % multiplier
 
 
 func moves_text() -> String:
-	return "Moves: %d/%d" % [moves, MOVE_LIMIT]
+	return "Moves: %d/%d" % [moves, move_limit]

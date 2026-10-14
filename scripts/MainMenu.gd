@@ -1,9 +1,12 @@
 extends Control
 
-const SaveDataScript := preload("res://scripts/SaveData.gd")
+const CoinManagerScript := preload("res://scripts/CoinManager.gd")
+const SaveManagerScript := preload("res://scripts/SaveManager.gd")
+const LevelsScript := preload("res://data/levels.gd")
 
 func _ready() -> void:
-	$Menu/CoinsLabel.text = "Coins: %d" % SaveDataScript.load_coins()
+	$Menu/CoinsLabel.text = "Coins: %d" % CoinManagerScript.balance()
+	$Menu/StarsLabel.text = "Stars: %d" % SaveManagerScript.total_stars()
 	$Menu/PlayButton.pressed.connect(_open_first_level)
 	$Menu/LevelSelectButton.pressed.connect(_open_level_select)
 	$Menu/UpgradeButton.pressed.connect(_open_robot_upgrade)
@@ -11,6 +14,7 @@ func _ready() -> void:
 
 
 func _open_first_level() -> void:
+	LevelsScript.select_level("first_battery")
 	get_tree().change_scene_to_file("res://scenes/GameBoard.tscn")
 
 

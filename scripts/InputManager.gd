@@ -106,7 +106,10 @@ func _handle_swipe(tile: Tile, direction: Vector2i) -> void:
 
 
 func _tile_at(point: Vector2) -> Tile:
-	for tile in _board.grid:
+	for entry in _board.grid:
+		var tile := entry as Tile
+		if tile == null or not is_instance_valid(tile):
+			continue
 		if tile.get_global_rect().has_point(point):
 			return tile
 	return null
