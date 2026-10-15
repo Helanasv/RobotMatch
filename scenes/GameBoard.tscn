@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://cgameboard01"]
+[gd_scene load_steps=4 format=3 uid="uid://cgameboard01"]
 
 [ext_resource type="Script" path="res://scripts/GameBoard.gd" id="1_board"]
 [ext_resource type="Script" path="res://scripts/BoardManager.gd" id="2_manager"]
+[ext_resource type="Script" path="res://scripts/Robot.gd" id="3_robot"]
 
 [node name="GameBoard" type="Control"]
 layout_mode = 3
@@ -36,17 +37,17 @@ theme_override_constants/margin_bottom = 24
 
 [node name="VBox" type="VBoxContainer" parent="Layout"]
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 10
 
 [node name="TopBar" type="HBoxContainer" parent="Layout/VBox"]
-custom_minimum_size = Vector2(0, 80)
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
 theme_override_constants/separation = 12
 
 [node name="BackButton" type="Button" parent="Layout/VBox/TopBar"]
-custom_minimum_size = Vector2(160, 72)
+custom_minimum_size = Vector2(140, 64)
 layout_mode = 2
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 24
 text = "Back"
 
 [node name="Title" type="Label" parent="Layout/VBox/TopBar"]
@@ -58,10 +59,6 @@ text = "First Battery"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Balance" type="Control" parent="Layout/VBox/TopBar"]
-custom_minimum_size = Vector2(160, 0)
-layout_mode = 2
-
 [node name="GoalLabel" type="Label" parent="Layout/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.96, 0.8, 0.18, 1)
@@ -69,6 +66,39 @@ theme_override_font_sizes/font_size = 22
 text = "Goal: Batteries: 0/10"
 horizontal_alignment = 1
 autowrap_mode = 3
+
+[node name="BossPanel" type="VBoxContainer" parent="Layout/VBox"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="BossLabel" type="Label" parent="Layout/VBox/BossPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.45, 0.38, 1)
+theme_override_font_sizes/font_size = 24
+text = "Boss: 100/100"
+horizontal_alignment = 1
+
+[node name="HealthBar" type="ProgressBar" parent="Layout/VBox/BossPanel"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+max_value = 100.0
+value = 100.0
+show_percentage = false
+
+[node name="PhaseLabel" type="Label" parent="Layout/VBox/BossPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.95, 0.86, 1)
+theme_override_font_sizes/font_size = 22
+text = "Phase 1  Shield"
+horizontal_alignment = 1
+
+[node name="HealthLabel" type="Label" parent="Layout/VBox/BossPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.9, 0.62, 1)
+theme_override_font_sizes/font_size = 22
+text = "Health: 100/100"
+horizontal_alignment = 1
 
 [node name="VirusLabel" type="Label" parent="Layout/VBox"]
 visible = false
@@ -78,9 +108,33 @@ theme_override_font_sizes/font_size = 22
 text = "Virus: 0/20"
 horizontal_alignment = 1
 
+[node name="TimerLabel" type="Label" parent="Layout/VBox"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 26
+text = "Time: 60"
+horizontal_alignment = 1
+
+[node name="HurryLabel" type="Label" parent="Layout/VBox"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.35, 0.28, 1)
+theme_override_font_sizes/font_size = 28
+text = "Hurry Up"
+horizontal_alignment = 1
+
 [node name="Status" type="HBoxContainer" parent="Layout/VBox"]
 layout_mode = 2
 theme_override_constants/separation = 8
+
+[node name="CoinsLabel" type="Label" parent="Layout/VBox/Status"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.98, 0.86, 0.35, 1)
+theme_override_font_sizes/font_size = 20
+text = "Coins: 0"
+horizontal_alignment = 1
 
 [node name="ScoreLabel" type="Label" parent="Layout/VBox/Status"]
 layout_mode = 2
@@ -106,6 +160,10 @@ theme_override_font_sizes/font_size = 22
 text = "Moves: 20/20"
 horizontal_alignment = 1
 
+[node name="RobotPanel" type="PanelContainer" parent="Layout/VBox"]
+layout_mode = 2
+script = ExtResource("3_robot")
+
 [node name="BoardHost" type="Control" parent="Layout/VBox"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -121,6 +179,105 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("2_manager")
+
+[node name="NoticeLabel" type="Label" parent="Layout/VBox"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.78, 0.42, 1)
+theme_override_font_sizes/font_size = 22
+text = "No hints available"
+horizontal_alignment = 1
+
+[node name="Actions" type="HBoxContainer" parent="Layout/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HintButton" type="Button" parent="Layout/VBox/Actions"]
+custom_minimum_size = Vector2(110, 65)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "Hint"
+
+[node name="ShuffleButton" type="Button" parent="Layout/VBox/Actions"]
+custom_minimum_size = Vector2(110, 65)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "Shuffle"
+
+[node name="PauseButton" type="Button" parent="Layout/VBox/Actions"]
+custom_minimum_size = Vector2(110, 65)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "Pause"
+
+[node name="SettingsButton" type="Button" parent="Layout/VBox/Actions"]
+custom_minimum_size = Vector2(110, 65)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+text = "Settings"
+
+[node name="GoalScreen" type="Control" parent="."]
+visible = false
+z_index = 10
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dim" type="ColorRect" parent="GoalScreen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.04, 0.06, 0.1, 0.72)
+
+[node name="Card" type="PanelContainer" parent="GoalScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -280.0
+offset_right = 300.0
+offset_bottom = 280.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="VBoxContainer" parent="GoalScreen/Card"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="GoalScreen/Card/Panel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.2, 1)
+theme_override_font_sizes/font_size = 40
+text = "Goal"
+horizontal_alignment = 1
+
+[node name="Body" type="Label" parent="GoalScreen/Card/Panel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.16, 0.2, 1)
+theme_override_font_sizes/font_size = 26
+text = "Goal"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="StartButton" type="Button" parent="GoalScreen/Card/Panel"]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Start"
 
 [node name="WinScreen" type="Control" parent="."]
 visible = false
@@ -149,9 +306,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -280.0
-offset_top = -300.0
+offset_top = -360.0
 offset_right = 280.0
-offset_bottom = 300.0
+offset_bottom = 360.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -180,12 +337,10 @@ theme_override_font_sizes/font_size = 28
 text = "Moves left: 0"
 horizontal_alignment = 1
 
-[node name="StarsLabel" type="Label" parent="WinScreen/Card/Panel"]
+[node name="StarsRow" type="HBoxContainer" parent="WinScreen/Card/Panel"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.12, 0.16, 0.2, 1)
-theme_override_font_sizes/font_size = 28
-text = "Stars: 0"
-horizontal_alignment = 1
+theme_override_constants/separation = 8
+alignment = 1
 
 [node name="CoinsLabel" type="Label" parent="WinScreen/Card/Panel"]
 layout_mode = 2
@@ -193,6 +348,15 @@ theme_override_colors/font_color = Color(0.12, 0.16, 0.2, 1)
 theme_override_font_sizes/font_size = 28
 text = "Coins: 0"
 horizontal_alignment = 1
+
+[node name="RewardLabel" type="Label" parent="WinScreen/Card/Panel"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.45, 0.62, 1)
+theme_override_font_sizes/font_size = 24
+text = "Reward: Repair Drone"
+horizontal_alignment = 1
+autowrap_mode = 3
 
 [node name="BackButton" type="Button" parent="WinScreen/Card/Panel"]
 custom_minimum_size = Vector2(0, 72)

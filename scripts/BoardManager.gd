@@ -5,6 +5,11 @@ const GAP := 6.0
 const FRAME_PADDING := 8.0
 const BLOCK_TEXTURE: Texture2D = preload("res://assets/tiles/block.svg")
 const VIRUS_TEXTURE: Texture2D = preload("res://assets/tiles/virus.svg")
+const ICE_TEXTURE: Texture2D = preload("res://assets/tiles/ice.svg")
+const ICE_CRACKED_TEXTURE: Texture2D = preload("res://assets/tiles/ice_cracked.svg")
+const LOCK_TEXTURE: Texture2D = preload("res://assets/tiles/lock.svg")
+const GATE_TEXTURE: Texture2D = preload("res://assets/tiles/gate.svg")
+const DRONE_TEXTURE: Texture2D = preload("res://assets/tiles/drone.svg")
 
 signal swap_committed
 
@@ -13,6 +18,7 @@ enum State { READY, SWAPPING, CHECKING, CLEARING, FALLING, REFILLING, WIN, LOSE 
 var grid: Array = []
 var state := State.READY
 var resolved_waves := 0
+var input_locked := false
 var _selected: Tile
 var _has_layout := false
 var _busy := false
@@ -108,6 +114,95 @@ func damage_blocks(tiles: Array, special: bool) -> int:
 	return hit.size()
 
 
+func place_locks(positions: Array) -> void:
+	_ensure_cells()
+	for pos in positions:
+		var row := int(pos[0])
+		var column := int(pos[1])
+		_cells[row * GRID_SIZE + column] = "lock"
+		_markers["%d,%d" % [row, column]] = _picture(LOCK_TEXTURE, 0)
+	_place_markers()
+
+
+func damage_locks(tiles: Array) -> int:
+	if _cells.size() != GRID_SIZE * GRID_SIZE:
+		return 0
+	var hit := {}
+	for tile in tiles:
+		if tile == null:
+			continue
+		_mark_kind(hit, tile.row - 1, tile.column, "lock")
+		_mark_kind(hit, tile.row + 1, tile.column, "lock")
+		_mark_kind(hit, tile.row, tile.column - 1, "lock")
+		_mark_kind(hit, tile.row, tile.column + 1, "lock")
+	for key in hit:
+		var cell: Vector2i = hit[key]
+		_cells[cell.x * GRID_SIZE + cell.y] = ""
+		var marker = _markers.get(key)
+		if is_instance_valid(marker):
+			marker.queue_free()
+		_markers.erase(key)
+	return hit.size()
+
+
+func lock_count() -> int:
+	return _count_kind("lock")
+
+
+func place_drone(position: Array) -> void:
+	var row := int(position[0])
+	var column := int(position[1])
+	_markers["%d,%d" % [row, column]] = _picture(DRONE_TEXTURE, 3)
+	_place_markers()
+
+
+func place_gate(position: Array) -> void:
+	_ensure_cells()
+	var row := int(position[0])
+	var column := int(position[1])
+	_cells[row * GRID_SIZE + column] = "gate"
+	_markers["%d,%d" % [row, column]] = _picture(GATE_TEXTURE, 0)
+	_place_markers()
+
+
+func open_gate() -> bool:
+	if _cells.size() != GRID_SIZE * GRID_SIZE:
+		return false
+	for row in GRID_SIZE:
+		for column in GRID_SIZE:
+			var index := row * GRID_SIZE + column
+			if str(_cells[index]) != "gate":
+				continue
+			_cells[index] = ""
+			var key := "%d,%d" % [row, column]
+			var marker = _markers.get(key)
+			if is_instance_valid(marker):
+				marker.queue_free()
+			_markers.erase(key)
+			return true
+	return false
+
+
+func gate_closed() -> bool:
+	return _count_kind("gate") > 0
+
+
+func _count_kind(kind_name: String) -> int:
+	var count := 0
+	for kind in _cells:
+		if str(kind) == kind_name:
+			count += 1
+	return count
+
+
+func _mark_kind(hit: Dictionary, row: int, column: int, kind_name: String) -> void:
+	if row < 0 or column < 0 or row >= GRID_SIZE or column >= GRID_SIZE:
+		return
+	if str(_cells[row * GRID_SIZE + column]) != kind_name:
+		return
+	hit["%d,%d" % [row, column]] = Vector2i(row, column)
+
+
 func block_count() -> int:
 	var count := 0
 	for kind in _cells:
@@ -163,6 +258,69 @@ func spread_virus() -> bool:
 	return false
 
 
+func place_ice(positions: Array) -> void:
+	_ensure_cells()
+	for pos in positions:
+		var row := int(pos[0])
+		var column := int(pos[1])
+		_cells[row * GRID_SIZE + column] = "ice"
+		_markers["%d,%d" % [row, column]] = _picture(ICE_TEXTURE, 2)
+	_place_markers()
+
+
+func damage_ice(tiles: Array) -> int:
+	if _cells.size() != GRID_SIZE * GRID_SIZE:
+		return 0
+	var hit := {}
+	for tile in tiles:
+		_mark_ice(hit, tile.row, tile.column)
+		_mark_ice(hit, tile.row - 1, tile.column)
+		_mark_ice(hit, tile.row + 1, tile.column)
+		_mark_ice(hit, tile.row, tile.column - 1)
+		_mark_ice(hit, tile.row, tile.column + 1)
+	var destroyed := 0
+	for key in hit:
+		var cell: Vector2i = hit[key]
+		var index := cell.x * GRID_SIZE + cell.y
+		if str(_cells[index]) == "ice":
+			_cells[index] = "ice_cracked"
+			var marker = _markers.get(key)
+			if is_instance_valid(marker):
+				marker.texture = ICE_CRACKED_TEXTURE
+		elif str(_cells[index]) == "ice_cracked":
+			_cells[index] = ""
+			var cracked = _markers.get(key)
+			if is_instance_valid(cracked):
+				cracked.queue_free()
+			_markers.erase(key)
+			destroyed += 1
+	return destroyed
+
+
+func is_frozen(tile: Tile) -> bool:
+	if tile == null or _cells.size() != GRID_SIZE * GRID_SIZE:
+		return false
+	return str(_cells[tile.row * GRID_SIZE + tile.column]) == "ice"
+
+
+func ice_count() -> int:
+	var count := 0
+	for kind in _cells:
+		var name := str(kind)
+		if name == "ice" or name == "ice_cracked":
+			count += 1
+	return count
+
+
+func _mark_ice(hit: Dictionary, row: int, column: int) -> void:
+	if row < 0 or column < 0 or row >= GRID_SIZE or column >= GRID_SIZE:
+		return
+	var kind := str(_cells[row * GRID_SIZE + column])
+	if kind != "ice" and kind != "ice_cracked":
+		return
+	hit["%d,%d" % [row, column]] = Vector2i(row, column)
+
+
 func infected_count() -> int:
 	var count := 0
 	for kind in _cells:
@@ -209,7 +367,13 @@ func _mark_infected(hit: Dictionary, row: int, column: int) -> void:
 func _blocks_fall(row: int, column: int) -> bool:
 	if _cells.size() != GRID_SIZE * GRID_SIZE:
 		return false
-	return str(_cells[row * GRID_SIZE + column]) == "metal"
+	return str(_cells[row * GRID_SIZE + column]) == "metal" or str(_cells[row * GRID_SIZE + column]) == "lock" or str(_cells[row * GRID_SIZE + column]) == "gate"
+
+
+func _ice_locked(row: int, column: int) -> bool:
+	if _cells.size() != GRID_SIZE * GRID_SIZE:
+		return false
+	return str(_cells[row * GRID_SIZE + column]) == "ice"
 
 
 func _clear_markers() -> void:
@@ -303,7 +467,7 @@ func snap_tiles() -> void:
 
 
 func can_swap() -> bool:
-	return _has_layout and state == State.READY
+	return _has_layout and state == State.READY and not input_locked
 
 
 func get_selected() -> Tile:
@@ -355,7 +519,7 @@ func detach_tile(tile: Tile) -> void:
 
 
 func swap_tiles(a: Tile, b: Tile, commit: bool) -> void:
-	if a == null or b == null or a == b:
+	if a == null or b == null or a == b or is_frozen(a) or is_frozen(b):
 		return
 	set_state(State.SWAPPING)
 	var pos_a := a.position
@@ -399,7 +563,7 @@ func collapse() -> void:
 	for column in GRID_SIZE:
 		var write := GRID_SIZE - 1
 		for row in range(GRID_SIZE - 1, -1, -1):
-			if _blocks_fall(row, column):
+			if _blocks_fall(row, column) or _ice_locked(row, column):
 				write = row - 1
 				continue
 			var tile: Tile = get_tile(row, column)
@@ -443,6 +607,10 @@ func _next_type() -> Tile.Type:
 	if _allowed.is_empty():
 		return randi_range(0, Tile.Type.size() - 1) as Tile.Type
 	return _allowed[randi_range(0, _allowed.size() - 1)]
+
+
+func exchange(a: Tile, b: Tile) -> void:
+	_exchange(a, b)
 
 
 func _exchange(a: Tile, b: Tile) -> void:

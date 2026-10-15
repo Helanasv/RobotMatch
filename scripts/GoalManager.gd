@@ -5,10 +5,15 @@ signal changed
 const COLLECT := "collect"
 const SCORE := "score"
 const DESTROY_BLOCKS := "destroy_blocks"
+const DESTROY_ICE := "destroy_ice"
 const CLEAR_INFECTED := "clear_infected"
 const CHARGE_GENERATOR := "charge_generator"
+const CHARGE_DRONE := "charge_drone"
+const CLEAR_PATH := "clear_path"
 const OPEN_DOOR := "open_door"
+const CREATE_KEYS := "create_keys"
 const RESCUE_DRONE := "rescue_drone"
+const DEFEAT_BOSS := "defeat_boss"
 
 const TileScript := preload("res://scripts/Tile.gd")
 
@@ -38,7 +43,7 @@ func record_match(tiles: Array, points: int, charge_rates = null) -> void:
 			gained = int(counts.get(goal.tile_type, 0))
 		elif goal.type == SCORE:
 			gained = points
-		elif goal.type == CHARGE_GENERATOR:
+		elif goal.type == CHARGE_GENERATOR or goal.type == CHARGE_DRONE:
 			for key in counts:
 				gained += int(counts[key]) * int(rates.get(key, 0))
 		if _gain(goal, gained):
@@ -67,6 +72,17 @@ func all_complete() -> bool:
 		if int(goal.current) < int(goal.amount):
 			return false
 	return true
+
+
+func is_complete(type: String) -> bool:
+	var found := false
+	for goal in goals:
+		if str(goal.type) != type:
+			continue
+		found = true
+		if int(goal.current) < int(goal.amount):
+			return false
+	return found
 
 
 func hud_text() -> String:
@@ -117,14 +133,24 @@ func _label(goal: Dictionary) -> String:
 			return "Score"
 		DESTROY_BLOCKS:
 			return "Blocks"
+		DESTROY_ICE:
+			return "Ice"
 		CLEAR_INFECTED:
 			return "Infected"
 		CHARGE_GENERATOR:
 			return "Generator"
+		CHARGE_DRONE:
+			return "Drone"
+		CLEAR_PATH:
+			return "Path"
 		OPEN_DOOR:
-			return "Door"
+			return "Gate"
+		CREATE_KEYS:
+			return "Keys"
 		RESCUE_DRONE:
 			return "Drone"
+		DEFEAT_BOSS:
+			return "Defeat"
 		_:
 			return str(goal.type)
 

@@ -20,6 +20,23 @@ func match_lengths(board: Control) -> Array:
 	return lengths
 
 
+func find_hint(board: Control) -> Array:
+	for row in board.GRID_SIZE:
+		for column in board.GRID_SIZE:
+			var tile: Tile = board.get_tile(row, column)
+			if tile == null or board.is_frozen(tile):
+				continue
+			for neighbor in [board.tile_at(row, column + 1), board.tile_at(row + 1, column)]:
+				if neighbor == null or board.is_frozen(neighbor):
+					continue
+				board.exchange(tile, neighbor)
+				var matched: Array = find_matches(board)
+				board.exchange(tile, neighbor)
+				if not matched.is_empty():
+					return [tile, neighbor]
+	return []
+
+
 func _collect_lines(board: Control, horizontal: bool, found: Dictionary, lengths) -> void:
 	for major in board.GRID_SIZE:
 		var run: Array = []
@@ -28,7 +45,7 @@ func _collect_lines(board: Control, horizontal: bool, found: Dictionary, lengths
 			var row: int = major if horizontal else minor
 			var column: int = minor if horizontal else major
 			var tile: Tile = board.get_tile(row, column)
-			if tile == null:
+			if tile == null or board.is_frozen(tile):
 				_keep_run(run, found, lengths)
 				run = []
 				run_type = -1

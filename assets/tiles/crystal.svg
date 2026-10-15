@@ -1,6 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
-  <rect width="128" height="128" rx="22" fill="#8d4de0"/>
-  <polygon points="64,18 104,64 64,112 24,64" fill="#f3e6ff" stroke="#3a1868" stroke-width="5" stroke-linejoin="round"/>
-  <polygon points="64,32 86,64 64,98 42,64" fill="#c48cf5"/>
-  <polygon points="64,32 74,64 64,98 64,32" fill="#f7f0ff"/>
+  <rect width="128" height="128" rx="24" fill="#8a3de8"/>
+  <polygon points="64,14 112,64 64,114 16,64" fill="#f7efff" stroke="#2c1058" stroke-width="7" stroke-linejoin="round"/>
+  <polygon points="64,34 90,64 64,96 38,64" fill="#c48cf5"/>
 </svg>

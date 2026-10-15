@@ -38,6 +38,16 @@ static func unlock_level(level_id: String) -> void:
 	_write()
 
 
+static func spend_coins(amount: int) -> bool:
+	_ensure()
+	var price := maxi(amount, 0)
+	if int(_data["coins"]) < price:
+		return false
+	_data["coins"] = int(_data["coins"]) - price
+	_write()
+	return true
+
+
 static func record_level(level_id: String, star_count: int, score: int, moves_left: int) -> void:
 	_ensure()
 	var unlocked: Array = _data["unlocked_levels"]
@@ -103,6 +113,26 @@ static func sound_settings() -> Dictionary:
 	}
 
 
+static func hints() -> int:
+	_ensure()
+	return int(_data.get("hints", 3))
+
+
+static func use_hint() -> bool:
+	_ensure()
+	if int(_data.get("hints", 0)) <= 0:
+		return false
+	_data["hints"] = int(_data["hints"]) - 1
+	_write()
+	return true
+
+
+static func add_hints(amount: int) -> void:
+	_ensure()
+	_data["hints"] = maxi(int(_data.get("hints", 3)) + amount, 0)
+	_write()
+
+
 static func set_sound(music: bool, effects: bool) -> void:
 	_ensure()
 	_data["sound"] = {"music": music, "effects": effects}
@@ -128,6 +158,7 @@ static func _defaults() -> Dictionary:
 		"levels": {},
 		"upgrades": {},
 		"sound": {"music": true, "effects": true},
+		"hints": 3,
 	}
 
 
@@ -149,6 +180,8 @@ static func _read() -> void:
 		_data["upgrades"] = saved["upgrades"]
 	if saved.get("sound") is Dictionary:
 		_data["sound"] = saved["sound"]
+	if saved.has("hints"):
+		_data["hints"] = maxi(int(saved["hints"]), 0)
 
 
 static func _write() -> void:

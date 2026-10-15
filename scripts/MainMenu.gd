@@ -6,7 +6,12 @@ const LevelsScript := preload("res://data/levels.gd")
 
 func _ready() -> void:
 	$Menu/CoinsLabel.text = "Coins: %d" % CoinManagerScript.balance()
-	$Menu/StarsLabel.text = "Stars: %d" % SaveManagerScript.total_stars()
+	$Menu/HelperLabel.visible = SaveManagerScript.get_upgrade("repair_drone") > 0
+	if SaveManagerScript.get_upgrade("unique_skin") > 0:
+		$Menu/WorldLabel.text = "Electric City\nSkin: Factory Core"
+		$Menu/WorldLabel.visible = true
+	else:
+		$Menu/WorldLabel.visible = SaveManagerScript.get_upgrade("factory_hero") > 0
 	$Menu/PlayButton.pressed.connect(_open_first_level)
 	$Menu/LevelSelectButton.pressed.connect(_open_level_select)
 	$Menu/UpgradeButton.pressed.connect(_open_robot_upgrade)
@@ -19,7 +24,11 @@ func _open_first_level() -> void:
 
 
 func _open_level_select() -> void:
-	get_tree().change_scene_to_file("res://scenes/LevelSelect.tscn")
+	if SaveManagerScript.get_upgrade("electric_city") > 0:
+		get_tree().change_scene_to_file("res://scenes/WorldSelect.tscn")
+	else:
+		LevelsScript.select_world("factory")
+		get_tree().change_scene_to_file("res://scenes/LevelSelect.tscn")
 
 
 func _open_robot_upgrade() -> void:

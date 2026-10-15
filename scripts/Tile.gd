@@ -26,6 +26,7 @@ var _icon: TextureRect
 var _tween: Tween
 var _is_selected := false
 var _is_matched := false
+var _is_hint := false
 var _base_border := Color(0.08, 0.1, 0.14)
 
 
@@ -74,6 +75,11 @@ func set_matched(is_matched: bool) -> void:
 	_update_chrome()
 
 
+func set_hint(is_hint: bool) -> void:
+	_is_hint = is_hint
+	_update_chrome()
+
+
 func _update_chrome() -> void:
 	if _style == null:
 		return
@@ -83,8 +89,15 @@ func _update_chrome() -> void:
 		modulate = Color(1.3, 1.3, 1.3)
 		return
 	modulate = Color.WHITE
-	_style.border_color = Color.WHITE if _is_selected else _base_border
-	_style.set_border_width_all(5 if _is_selected else 3)
+	if _is_selected:
+		_style.border_color = Color.WHITE
+		_style.set_border_width_all(5)
+	elif _is_hint:
+		_style.border_color = Color(0.35, 0.95, 1)
+		_style.set_border_width_all(6)
+	else:
+		_style.border_color = _base_border
+		_style.set_border_width_all(3)
 
 
 func halt() -> void:

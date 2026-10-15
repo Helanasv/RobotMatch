@@ -55,6 +55,8 @@ func _press(point: Vector2) -> void:
 	if not _board.can_swap():
 		return
 	var tile: Tile = _tile_at(point)
+	if tile != null and _board.is_frozen(tile):
+		tile = null
 	_pressed = tile
 	_selected_at_press = _board.get_selected()
 	_press_position = point
@@ -81,11 +83,17 @@ func _release(point: Vector2) -> void:
 
 
 func _handle_tap(tile: Tile, selected: Tile) -> void:
-	if selected == null or selected == tile:
+	if selected == tile:
+		_board.clear_selection()
+		return
+	if selected == null:
 		_board.select_tile(tile)
 		return
 	if _board.is_orthogonal_neighbor(selected, tile):
 		_board.clear_selection()
+		if _board.is_frozen(selected) or _board.is_frozen(tile):
+			_board.reject_move(tile, Vector2i.ZERO)
+			return
 		_board.swap_tiles(selected, tile, true)
 		return
 	_board.swap_tiles(selected, tile, false)
@@ -98,7 +106,7 @@ func _handle_swipe(tile: Tile, direction: Vector2i) -> void:
 		_board.reject_move(tile, direction)
 		return
 	var neighbor: Tile = _board.tile_at(tile.row + direction.y, tile.column + direction.x)
-	if neighbor == null:
+	if neighbor == null or _board.is_frozen(neighbor):
 		_board.reject_move(tile, direction)
 		return
 	_board.clear_selection()

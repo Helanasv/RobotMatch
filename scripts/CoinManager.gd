@@ -9,3 +9,7 @@ static func balance() -> int:
 
 static func add(amount: int) -> int:
 	return SaveManagerScript.add_coins(amount)
+
+
+static func spend(amount: int) -> bool:
+	return SaveManagerScript.spend_coins(amount)

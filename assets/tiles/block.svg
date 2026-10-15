@@ -1,9 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
-  <rect width="128" height="128" rx="22" fill="#8b93a0"/>
-  <rect x="18" y="18" width="92" height="92" rx="16" fill="#d5dbe3" stroke="#3c4450" stroke-width="6"/>
-  <circle cx="36" cy="36" r="7" fill="#8b93a0" stroke="#3c4450" stroke-width="4"/>
-  <circle cx="92" cy="36" r="7" fill="#8b93a0" stroke="#3c4450" stroke-width="4"/>
-  <circle cx="36" cy="92" r="7" fill="#8b93a0" stroke="#3c4450" stroke-width="4"/>
-  <circle cx="92" cy="92" r="7" fill="#8b93a0" stroke="#3c4450" stroke-width="4"/>
-  <rect x="46" y="58" width="36" height="12" rx="4" fill="#8b93a0"/>
+  <rect width="128" height="128" rx="24" fill="#8d96a3"/>
+  <rect x="16" y="16" width="96" height="96" rx="16" fill="#e7edf4" stroke="#2c3440" stroke-width="8"/>
+  <circle cx="36" cy="36" r="10" fill="#8d96a3" stroke="#2c3440" stroke-width="5"/>
+  <circle cx="92" cy="36" r="10" fill="#8d96a3" stroke="#2c3440" stroke-width="5"/>
+  <circle cx="36" cy="92" r="10" fill="#8d96a3" stroke="#2c3440" stroke-width="5"/>
+  <circle cx="92" cy="92" r="10" fill="#8d96a3" stroke="#2c3440" stroke-width="5"/>
 </svg>

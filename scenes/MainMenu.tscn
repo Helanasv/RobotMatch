@@ -49,13 +49,6 @@ theme_override_font_sizes/font_size = 28
 text = "Coins: 0"
 horizontal_alignment = 1
 
-[node name="StarsLabel" type="Label" parent="Menu"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.98, 0.95, 0.86, 1)
-theme_override_font_sizes/font_size = 28
-text = "Stars: 0"
-horizontal_alignment = 1
-
 [node name="RobotRow" type="HBoxContainer" parent="Menu"]
 layout_mode = 2
 theme_override_constants/separation = 16
@@ -72,6 +65,22 @@ size_flags_vertical = 4
 theme_override_colors/font_color = Color(0.918, 0.949, 0.973, 1)
 theme_override_font_sizes/font_size = 28
 text = "Bolt"
+
+[node name="HelperLabel" type="Label" parent="Menu"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.62, 0.86, 0.95, 1)
+theme_override_font_sizes/font_size = 26
+text = "Helper: Repair Drone"
+horizontal_alignment = 1
+
+[node name="WorldLabel" type="Label" parent="Menu"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.82, 0.4, 1)
+theme_override_font_sizes/font_size = 26
+text = "Electric City"
+horizontal_alignment = 1
 
 [node name="Spacer" type="Control" parent="Menu"]
 custom_minimum_size = Vector2(0, 12)
